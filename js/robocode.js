@@ -233,7 +233,7 @@ $(document).ready(function() {
                   "signal": "CALLBACK",
                   "callback_id": event["callback_id"],
                   "status": "DONE",
-                  "move_completed": true
+                  "turn_completed": true
                 });
               }
               else {
