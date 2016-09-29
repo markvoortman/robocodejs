@@ -1,4 +1,4 @@
-BaseRobot = {
+BaseBot = {
 	_callback_counter: 0,
 	_callback_status: {},
 	
@@ -57,15 +57,13 @@ BaseRobot = {
 	},
 	_receive: function(msg) {
 		var msg_obj = JSON.parse(msg);
-		
 		switch(msg_obj["signal"]) {
 			case "CALLBACK":
 				var callbacks = this._callback_status[msg_obj["callback_id"]];				
-				if(callbacks) {
+				if (callbacks) {
 					var callback = callbacks[msg_obj["status"]];
-					if(callback) {
+					if (callback) {
 						callback();
-						
 					}
 					delete this._callback_status[msg_obj["callback_id"]];
 				}
@@ -87,26 +85,21 @@ BaseRobot = {
 		var callback_id = this._callback_counter++;
 		msg_obj["callback_id"] = callback_id;
 		var msg = JSON.stringify(msg_obj);
-		
 		this._callback_status[callback_id] = callback;
-		
 		postMessage(msg);
 	},
-	
-	
-	
 	_run: function() {
-		var base_robot = this;
+		var bot = this;
 		this.run();
 		/*
 		setTimeout(function() {
-			base_robot._run();
+			bot._run();
 		}, 1);
 		*/
 	},
-	run: function() {},
+	run: function() {}
 }
 
 onmessage = function(e) {
-	BaseRobot._receive(e.data);
+	BaseBot._receive(e.data);
 };
