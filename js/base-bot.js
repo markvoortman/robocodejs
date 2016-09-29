@@ -1,7 +1,11 @@
 BaseBot = {
   _move_completed: null,
+  _turn_completed: null,
   _turret_turn_completed: null,
   _radar_turn_completed: null,
+  state: {
+    "move_direction": "FORWARD" // "FORWARD" or "BACKWARD"
+  },
   move_completed: function(cb) {
     if (cb) {
       this._move_completed = cb;
@@ -9,6 +13,16 @@ BaseBot = {
     else {
       if (this._move_completed) {
         this._move_completed(null);
+      }
+    }
+  },
+  turn_completed: function(cb) {
+    if (cb) {
+      this._turn_completed = cb;
+    }
+    else {
+      if (this._turn_completed) {
+        this._turn_completed();
       }
     }
   },
@@ -33,16 +47,34 @@ BaseBot = {
     }
   },
   move_forward: function(distance) {
+    this.state.move_direction = "FORWARD";
     this._send({
       "signal": "MOVE",
       "distance": distance
     });
   },
   move_backward: function(distance) {
+    this.state.move_direction = "BACKWARD";
     this._send({
       "signal": "MOVE",
       "distance": -distance
     });
+  },
+  "move": function(distance) {
+    if (this.state.move_direction === "FORWARD") {
+      this.move_forward(distance);
+    }
+    else {
+      this.move_backward(distance);
+    }
+  },
+  move_reverse: function(distance) {
+    if (this.state.move_direction === "FORWARD") {
+      this.move_backward(distance);
+    }
+    else {
+      this.move_forward(distance);
+    }
   },
   turn_left: function(angle) {
     this._send({
@@ -98,6 +130,9 @@ BaseBot = {
             reason = "WALL_COLLIDE";
           }
           this._move_completed(reason);
+        }
+        if (msg_obj["turn_completed"] && this._turn_completed) {
+          this._turn_completed();
         }
         if (msg_obj["turret_turn_completed"] && this._turret_turn_completed) {
           this._turret_turn_completed();

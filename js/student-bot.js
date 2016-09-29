@@ -2,32 +2,34 @@ importScripts("base-bot.js");
 
 StudentBot = BaseBot;
 
-//moving:   actions: move_forwards move_backwards turn_left turn_right
-//        callbacks: move_completed
-//shooting:   actions: turn_turret_left turn_turret_right shoot
-//          callbacks: bot_hit
-//radar:  actions: turn_radar_left turn_radar_right
-//       callback: bot_detected (not implemented)
-
 StudentBot.run = function() {
   var bot = this;
   
   // callback function for when move completes
   bot.move_completed(function(reason) {
-    // reason can be null, "WALL_COLLIDE", or "ENEMY_COLLIDE"
-    var action = Math.floor(4 * Math.random());
+    if (reason === null) {
+      // keep going in same direction
+      bot.move(100);
+    }
+    else if (reason === "WALL_COLLIDE" || reason === "ENEMY_COLLIDE") {
+      // must have hit something so back up
+      bot.move_reverse(200);
+    }
+    else {
+      console.log("unknown reason: " + reason);
+    }
+  });
+  
+  // callback function for when turn completes
+  bot.turn_completed(function() {
+    // either turn left or right
+    var action = Math.floor(2 * Math.random());
     switch (action) {
       case 0:
-        bot.move_forward(100);
+        bot.turn_left(45);
         break;
       case 1:
-        bot.move_backward(100);
-        break;
-      case 2:
-        bot.turn_left(90);
-        break;
-      case 3:
-        bot.turn_right(90);
+        bot.turn_right(45);
         break;
     }
   });
@@ -39,10 +41,10 @@ StudentBot.run = function() {
     var action = Math.floor(2 * Math.random());
     switch (action) {
       case 0:
-        bot.turn_turret_left(90);
+        bot.turn_turret_left(45);
         break;
       case 1:
-        bot.turn_turret_right(90);
+        bot.turn_turret_right(45);
         break;
     }
   });
@@ -62,6 +64,9 @@ StudentBot.run = function() {
   
   // start moving
   bot.move_completed();
+  
+  // start turning
+  bot.turn_completed();
   
   // start turning turret
   bot.turret_turn_completed();
