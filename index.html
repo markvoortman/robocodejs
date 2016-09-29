@@ -1,15 +1,10 @@
 <html>
 	<head>
+	<title>RoboCodeJS</title>
 	</head>
 	<body>
 		<canvas style="border: 1px solid black;" width="800" height="600" id="canvas"></canvas>
 		<script type="text/javascript" src="js/jquery-1.12.4.min.js"></script>
 		<script type="text/javascript" src="js/robotjs.js"></script>
-		<script type="text/javascript">
-			$(document).ready(function() {
-				BattleManager.init(ctx, ["js/scan-bot.js", "js/student-bot.js"]);
-				BattleManager.run();
-			});
-		</script>
 	</body>
 </html>
