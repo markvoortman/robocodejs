@@ -4,37 +4,46 @@ EnemyBot = BaseBot;
 
 EnemyBot.run = function() {
 	var bot = this;
-	bot.shoot();
-	
-	bot.turn_turret_right(45);
-	bot.move_forward(Math.random()*400, {
-		DONE: function() {
+  
+	// callback function for when move completes
+	bot.move_completed(function(reason) {
+    if (reason === null) {
 			bot.shoot();
-			bot.turn_right(Math.random()*90, {
-				DONE: function() {
-					bot.shoot();
-					bot._run();
-				}
-			}); 
-		},
-		ENEMY_COLLIDE: function() {
+      var action = Math.floor(2 * Math.random());
+      switch (action) {
+        case 0:
+          bot.move_forward(Math.random()*400);
+          break;
+        case 1:
+          bot.turn_right(Math.random()*90);
+          break;
+      }
+    }
+    else if (reason === "ENEMY_COLLIDE") {
 			bot.shoot();
-			bot.move_backward(100, {
-				DONE: function() {
-					bot._run();
-				},
-				WALL_COLLIDE: function() {
-					bot._run();
-				}
-			});
-		},
-		WALL_COLLIDE: function() {
-			bot.turn_left(180, {
-				DONE: function() {
-					bot.shoot();
-					bot._run();
-				}
-			});
-		}
+			bot.move_backward(100);
+    }
+    else if (reason === "WALL_COLLIDE") {
+			bot.shoot();
+			bot.turn_left(180);
+    }
+    else {
+      console.log("unknown reason: " + reason);
+    }
 	});
+	
+	// callback function for when turret turn completes
+	bot.turret_turn_completed(function() {
+    // always shoot!
+    bot.shoot();
+	});
+	
+	// callback function for when radar turn completes
+	bot.radar_turn_completed(function() {
+    // TODO
+	});
+	
+	bot.shoot();
+	bot.move_forward(Math.random()*400);
+	bot.turn_turret_right(45);
 }

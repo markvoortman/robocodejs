@@ -185,7 +185,8 @@ $(document).ready(function() {
 								this._send(r, {
 									"signal": "CALLBACK",
 									"callback_id": event["callback_id"],
-									"status": "WALL_COLLIDE"
+									"status": "WALL_COLLIDE",
+									"move_completed": true
 								});
 								break;
 							}
@@ -202,62 +203,72 @@ $(document).ready(function() {
 									this._send(r, {
 										"signal": "CALLBACK",
 										"callback_id": event["callback_id"],
-										"status": "ENEMY_COLLIDE"
+										"status": "ENEMY_COLLIDE",
+  									"move_completed": true
 									});
 									break;
 								}
 							}	
-							if (robot_hit) break;
-						  
-							if (event["progress"]>Math.abs(event["distance"])) {
+							if (robot_hit) {
+							  // done
+							}
+							else if (event["progress"] > Math.abs(event["distance"])) {
 								console.log("move-over " + robot["id"]);
 								this._send(r, {
 									"signal": "CALLBACK",
 									"callback_id": event["callback_id"],
-									"status": "DONE"
+									"status": "DONE",
+									"move_completed": true
 								});
-								break;
 							}
-							robot["x"] = new_x;
-							robot["y"] = new_y;
-							robot["events"].unshift(event);
+							else {
+  							robot["x"] = new_x;
+  							robot["y"] = new_y;
+  							robot["events"].unshift(event);
+							}
 							break;
 						case "ROTATE":
 							if (event["progress"] === Math.abs(parseInt(event["angle"]))) {
 								this._send(r, {
 									"signal": "CALLBACK",
 									"callback_id": event["callback_id"],
-									"status": "DONE"
+									"status": "DONE",
+									"move_completed": true
 								});
-								break;
 							}
-							robot["direction"] += (event["angle"]>0?1:-1);
-							event["progress"]++;
-							robot["events"].unshift(event);
+							else {
+  							robot["direction"] += (event["angle"]>0?1:-1);
+  							event["progress"]++;
+  							robot["events"].unshift(event);
+							}
 							break;
 						case "ROTATE_TURRET":
 							if (event["progress"] === Math.abs(event["angle"])) {
 								this._send(r, {
 									"signal": "CALLBACK",
-									"callback_id": event["callback_id"]
+									"callback_id": event["callback_id"],
+									"turret_turn_completed": true
 								});
-								break;
 							}
-							robot["turret_direction"] += (event["angle"]>0?1:-1);
-							event["progress"]++;
-							robot["events"].unshift(event);
+							else {
+  							robot["turret_direction"] += (event["angle"]>0?1:-1);
+  							event["progress"]++;
+  							robot["events"].unshift(event);
+							}
 							break;
 						case "ROTATE_RADAR":
 							if (event["progress"] === Math.abs(event["angle"])) {
 								this._send(r, {
 									"signal": "CALLBACK",
-									"callback_id": event["callback_id"]
+									"callback_id": event["callback_id"],
+									"radar_turn_completed": true
 								});
-								break;
 							}
-							robot["radar_direction"] += (event["angle"]>0?1:-1);
-							event["progress"]++;
-							robot["events"].unshift(event);
+							else {
+  							robot["radar_direction"] += (event["angle"]>0?1:-1);
+  							event["progress"]++;
+  							robot["events"].unshift(event);
+							}
 							break;
 					}
 					this._send(r, {
@@ -283,15 +294,16 @@ $(document).ready(function() {
 				
 				// draw body
 				ctx.drawImage(body, -18, -18, 36, 36);
+				
 				// rotate for turret
 				ctx.rotate(Utils.degree2radian(robot["turret_direction"]));
 				ctx.drawImage(turret, -25, -10, 54, 20);
-				// rotate back to body
 				ctx.rotate(-Utils.degree2radian(robot["turret_direction"]));
+				
 				// rotate for radar
-				//robot["radar_direction"]++;
 				ctx.rotate(Utils.degree2radian(robot["radar_direction"]));
 				ctx.drawImage(radar, -8, -11, 16, 22);
+				ctx.rotate(-Utils.degree2radian(robot["radar_direction"]));
 			}
 			
 			// draw robots
@@ -300,10 +312,22 @@ $(document).ready(function() {
 				
 				// draw robot
 				battle_manager._ctx.save();
-				battle_manager._ctx.translate(robot["x"],robot["y"]);
+				battle_manager._ctx.translate(robot["x"], robot["y"]);
 				battle_manager._ctx.rotate(Utils.degree2radian(robot["direction"]));
 				draw_robot(battle_manager._ctx, robot);
 				battle_manager._ctx.restore();
+				
+				// draw radar beam
+				/*
+				battle_manager._ctx.beginPath();
+				battle_manager._ctx.strokeStyle = "red";
+				battle_manager._ctx.moveTo(robot["x"], robot["y"]);
+				battle_manager._ctx.lineTo(robot["x"], robot["y"]-100);
+				battle_manager._ctx.moveTo(robot["x"], robot["y"]);
+				battle_manager._ctx.lineTo(robot["x"]-100, robot["y"]);
+				battle_manager._ctx.stroke();
+				battle_manager._ctx.closePath();
+				*/
 				
 				// draw bullet
 				if (robot["bullet"]) {
@@ -317,19 +341,19 @@ $(document).ready(function() {
 				/*
 				battle_manager._ctx.beginPath();
 				battle_manager._ctx.strokeStyle = "red";
-				battle_manager._ctx.moveTo(robot["x"]-40,robot["y"]);
-				battle_manager._ctx.lineTo(robot["x"]+40,robot["y"]);
-				battle_manager._ctx.moveTo(robot["x"],robot["y"]-40);
-				battle_manager._ctx.lineTo(robot["x"],robot["y"]+40);
+				battle_manager._ctx.moveTo(robot["x"]-40, robot["y"]);
+				battle_manager._ctx.lineTo(robot["x"]+40, robot["y"]);
+				battle_manager._ctx.moveTo(robot["x"], robot["y"]-40);
+				battle_manager._ctx.lineTo(robot["x"], robot["y"]+40);
 				battle_manager._ctx.stroke();
 				battle_manager._ctx.closePath();
 				*/
 				
 				battle_manager._ctx.strokeText(robot["id"] + " (" + robot["health"] + ")", robot["x"]-20,robot["y"]+35);
 				battle_manager._ctx.fillStyle = "green";
-				battle_manager._ctx.fillRect(robot["x"]-20,robot["y"]+35, robot["health"], 5);
+				battle_manager._ctx.fillRect(robot["x"]-20, robot["y"]+35, robot["health"], 5);
 				battle_manager._ctx.fillStyle = "red";
-				battle_manager._ctx.fillRect(robot["x"]-20+robot["health"],robot["y"]+35, 25-robot["health"], 5);
+				battle_manager._ctx.fillRect(robot["x"]-20+robot["health"], robot["y"]+35, 25-robot["health"], 5);
 				battle_manager._ctx.fillStyle = "black";
 			}
 			for (var e = 0; e < battle_manager._explosions.length; e++) {
@@ -337,9 +361,9 @@ $(document).ready(function() {
 				
 				if (explosion["progress"] <= 17) {
 					var explosion_img = new Image();
-					explosion_img.src = "img/explosion/explosion1-" + parseInt(explosion["progress"])+'.png';
+					explosion_img.src = "img/explosion/explosion1-" + parseInt(explosion["progress"]) + ".png";
 					battle_manager._ctx.drawImage(explosion_img, explosion["x"]-64, explosion["y"]-64, 128, 128);
-					explosion["progress"]+= .1;
+					explosion["progress"] += .1;
 					battle_manager._explosions.unshift(explosion);
 				}
 			}

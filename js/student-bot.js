@@ -11,60 +11,61 @@ StudentBot = BaseBot;
 
 StudentBot.run = function() {
 	var bot = this;
-	bot.turn_radar_left(45);
-	function move(forward) {
-    bot.shoot();
-	  bot.turn_left(45, {
-	    "DONE": function() {
-        if (forward || true) {
-          bot.move_forward(100, {
-            DONE: function() {
-              move(!forward);
-            }
-          });
-        }
-        else {
-          bot.move_backward(100, {
-            DONE: function() {
-              move(!forward);
-            }
-          });
-        }
-	    }
-	  });
-  }
-  move(true);
-  /*	
-	bot.turn_turret_right(45);
-	bot.move_forward(Math.random()*400, {
-		DONE: function() {
-			bot.shoot();
-			bot.turn_right(Math.random()*90, {
-				DONE: function() {
-					bot.shoot();
-					bot._run();
-				}
-			}); 
-		},
-		ENEMY_COLLIDE: function() {
-			bot.shoot();
-			bot.move_backward(100, {
-				DONE: function() {
-					bot._run();
-				},
-				WALL_COLLIDE: function() {
-					bot._run();
-				}
-			});
-		},
-		WALL_COLLIDE: function() {
-			bot.turn_left(180, {
-				DONE: function() {
-					bot.shoot();
-					bot._run();
-				}
-			});
-		}
+	
+	// callback function for when move completes
+	bot.move_completed(function(reason) {
+	  // reason can be null, "WALL_COLLIDE", or "ENEMY_COLLIDE"
+	  var action = Math.floor(4 * Math.random());
+	  switch (action) {
+	    case 0:
+	      bot.move_forward(100);
+	      break;
+	    case 1:
+	      bot.move_backward(100);
+	      break;
+      case 2:
+    	  bot.turn_left(90);
+    	  break;
+      case 3:
+    	  bot.turn_right(90);
+    	  break;
+	  }
 	});
-	*/
+	
+	// callback function for when turret turn completes
+	bot.turret_turn_completed(function() {
+	  // always shoot!
+	  bot.shoot();
+	  var action = Math.floor(2 * Math.random());
+	  switch (action) {
+      case 0:
+    	  bot.turn_turret_left(90);
+    	  break;
+      case 1:
+    	  bot.turn_turret_right(90);
+    	  break;
+	  }
+	});
+	
+	// callback function for when radar turn completes
+	bot.radar_turn_completed(function() {
+	  var action = Math.floor(2 * Math.random());
+	  switch (action) {
+      case 0:
+    	  bot.turn_radar_left(90);
+    	  break;
+      case 1:
+    	  bot.turn_radar_right(90);
+    	  break;
+	  }
+	});
+	
+	// start moving
+	bot.move_completed();
+	
+	// start turning turret
+	bot.turret_turn_completed();
+	
+	// start scanning bots
+	bot.radar_turn_completed();
 }
