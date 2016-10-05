@@ -14,7 +14,7 @@ Coordinates:
 Properties:
 * `x`: x location of bot.
 * `y`: y location of bot.
-* `forward`: true if moving forward or we previously moved forward and have stopped now, false otherwise.
+* `forward`: true if moving forward or previously moving forward and stopped now, false otherwise.
 * `heading`: heading of bot, ranges between 0 and 360.
 * `gunHeading`: heading of gun, ranges between 0 and 360.
 * `radarHeading`: heading of radar, ranges between 0 and 360.

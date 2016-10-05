@@ -461,6 +461,6 @@ $(document).ready(function() {
   };
   
   // init and run
-  BattleManager.init(ctx, ["js/enemy-bot.js", "js/student-bot.js"]);
+  BattleManager.init(ctx, ["js/enemy-bot.js?"+Date.now(), "js/student-bot.js?"+Date.now()]);
   BattleManager.run();
 });
