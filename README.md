@@ -1,7 +1,12 @@
 # RoboCodeJS - RoboCode for JavaScript
 
 ## About
-This is a fork of [robojs](https://github.com/gumuz/robojs), which itself is a clone of the original [RoboCode](http://robocode.sourceforge.net/) that is written in Java. Many changes have been made to the robojs fork, including bug fixes and simplifications, as well as the addition of new features. We use RoboCodeJS in the [IT program](https://it.pointpark.edu/) at [Point Park University](http://www.pointpark.edu/). See [this](http://mvoortman.it.pointpark.edu/robocodejs/) page for a demo of RoboCodeJS.
+This is a fork of [robojs](https://github.com/gumuz/robojs), which itself is a clone of the original [RoboCode](http://robocode.sourceforge.net/) that is written in Java. Many changes have been made to the robojs fork, including bug fixes and simplifications, as well as the addition of new features (e.g., a working radar). We use RoboCodeJS in the [IT program](https://it.pointpark.edu/) at [Point Park University](http://www.pointpark.edu/). See [this](http://mvoortman.it.pointpark.edu/robocodejs/) page for a demo of RoboCodeJS.
+
+## Download
+There are two main ways to download the game:
+* Click on the green 'Clone or download' button at the top right of this page and select 'Download ZIP'.
+* If you are a Point Park IT student, you can also connect to your jail and run `sudo pkg install git`. When that completes run `cd www` to change into your www directory (if it doesn't exist, check out [this](https://it.pointpark.edu/tutorials/setting-up-your-environment/) and [this](https://it.pointpark.edu/tutorials/creating-your-homepage/) first) and then fetch all the files by running `git clone https://github.com/markvoortman/robocodejs.git` from the www directory. You can browse to http://username.it.pointpark.edu/robocodejs/ to see the result (change username to your Point Park username), and [FileZilla](https://it.pointpark.edu/tutorials/filezilla/) can be used to download the files to your local system and upload them back after making changes.
 
 ## Documentation
 If you want to implement your own bot, please make changes to `run()` in `js/student-bot.js` and only use the public interface documented below. Also, use local variables in the `run()` function to maintain state and do not mutate the bot object itself. This way, backward compatibility should be maintained for the most part, although there certainly will occasionally be changes that break backward compatibility. You should be aware of the following:
