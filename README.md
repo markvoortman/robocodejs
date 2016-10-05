@@ -38,5 +38,5 @@ Callbacks:
 * `onMoveCompleted(cb)`: function `cb` is called when a move has been completed. An `reason` argument is provided indicating why the move was completed: `ENEMY_COLLIDE`, `WALL_COLLIDE`, or `null`.
 * `onTurnCompleted(cb)`: function `cb` is called when a turn has been completed.
 * `onTurnGunCompleted(cb)`: function `cb` is called when a gun turn has been completed.
-* `onTurnRadarCompleted(cb)`: function `cb` is called when a radar has been completed.
+* `onTurnRadarCompleted(cb)`: function `cb` is called when a radar turn has been completed.
 * `onEnemyScanned(cb)`: function `cb` is called when an enemy has been scanned. An `enemy` argument is provided with `bearing` of the enemy and `distance` to the enemy as properties.
