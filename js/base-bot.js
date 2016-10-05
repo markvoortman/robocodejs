@@ -1,153 +1,153 @@
 BaseBot = {
-  _move_completed: null,
-  _turn_completed: null,
-  _turret_turn_completed: null,
-  _radar_turn_completed: null,
-  state: {
-    "move_direction": "FORWARD" // "FORWARD" or "BACKWARD"
-  },
-  move_completed: function(cb) {
+  // storage for callback functions
+  _onMoveCompleted: null,
+  _onTurnCompleted: null,
+  _onTurnGunCompleted: null,
+  _onTurnRadarCompleted: null,
+  _onEnemyScanned: null,
+  onMoveCompleted: function(cb) {
     if (cb) {
-      this._move_completed = cb;
+      this._onMoveCompleted = cb;
     }
     else {
-      if (this._move_completed) {
-        this._move_completed(null);
+      if (this._onMoveCompleted) {
+        this._onMoveCompleted(null);
       }
     }
   },
-  turn_completed: function(cb) {
+  onTurnCompleted: function(cb) {
     if (cb) {
-      this._turn_completed = cb;
+      this._onTurnCompleted = cb;
     }
     else {
-      if (this._turn_completed) {
-        this._turn_completed();
+      if (this._onTurnCompleted) {
+        this._onTurnCompleted();
       }
     }
   },
-  turret_turn_completed: function(cb) {
+  onTurnGunCompleted: function(cb) {
     if (cb) {
-      this._turret_turn_completed = cb;
+      this._onTurnGunCompleted = cb;
     }
     else {
-      if (this._turret_turn_completed) {
-        this._turret_turn_completed();
+      if (this._onTurnGunCompleted) {
+        this._onTurnGunCompleted();
       }
     }
   },
-  radar_turn_completed: function(cb) {
+  onTurnRadarCompleted: function(cb) {
     if (cb) {
-      this._radar_turn_completed = cb;
+      this._onTurnRadarCompleted = cb;
     }
     else {
-      if (this._radar_turn_completed) {
-        this._radar_turn_completed();
+      if (this._onTurnRadarCompleted) {
+        this._onTurnRadarCompleted();
       }
     }
   },
-  move_forward: function(distance) {
-    this.state.move_direction = "FORWARD";
-    this._send({
-      "signal": "MOVE",
-      "distance": distance
-    });
-  },
-  move_backward: function(distance) {
-    this.state.move_direction = "BACKWARD";
-    this._send({
-      "signal": "MOVE",
-      "distance": -distance
-    });
-  },
-  "move": function(distance) {
-    if (this.state.move_direction === "FORWARD") {
-      this.move_forward(distance);
+  onEnemyScanned: function(cb) {
+    if (cb) {
+      this._onEnemyScanned = cb;
     }
     else {
-      this.move_backward(distance);
+      if (this._onEnemyScanned) {
+        this._onEnemyScanned();
+      }
     }
   },
-  move_reverse: function(distance) {
-    if (this.state.move_direction === "FORWARD") {
-      this.move_backward(distance);
+  move: function(distance) {
+    // TODO: rounding should not be necessary
+    distance = Math.round(distance);
+    this._send({
+      signal: "MOVE",
+      distance: distance
+    });
+  },
+  turn: function(angle) {
+    // TODO: rounding should not be necessary
+    angle = Math.round(angle);
+    this._send({
+      signal: "TURN",
+      angle: angle
+    });
+  },
+  turnGun: function(angle) {
+    // TODO: rounding should not be necessary
+    angle = Math.round(angle);
+    this._send({
+      signal: "TURN_GUN",
+      angle: angle
+    });
+  },
+  turnRadar: function(angle) {
+    // TODO: rounding should not be necessary
+    angle = Math.round(angle);
+    this._send({
+      signal: "TURN_RADAR",
+      angle: angle
+    });
+  },
+  normalizeHeading: function(angle) {
+    // TODO: rounding should not be necessary
+    angle = Math.round(angle);
+    while (angle < 0) {
+      angle += 360;
+    }
+    return angle % 360;
+  },
+  normalizeBearing: function(angle) {
+    // TODO: rounding should not be necessary
+    angle = Math.round(angle);
+    if (angle < 0) {
+      while (angle < -180) {
+        angle += 360;
+      }
     }
     else {
-      this.move_forward(distance);
+      while (angle > 180) {
+        angle -= 360;
+      }
     }
-  },
-  turn_left: function(angle) {
-    this._send({
-      "signal": "ROTATE",
-      "angle": -angle
-    });
-  },
-  turn_right: function(angle) {
-    this._send({
-      "signal": "ROTATE",
-      "angle": angle
-    });
-  },
-  turn_turret_left: function(angle) {
-    this._send({
-      "signal": "ROTATE_TURRET",
-      "angle": -angle
-    });
-  },
-  turn_turret_right: function(angle) {
-    this._send({
-      "signal": "ROTATE_TURRET",
-      "angle": angle
-    });
-  },
-  turn_radar_left: function(angle) {
-    this._send({
-      "signal": "ROTATE_RADAR",
-      "angle": -angle
-    });
-  },
-  turn_radar_right: function(angle) {
-    this._send({
-      "signal": "ROTATE_RADAR",
-      "angle": angle
-    });
+    return angle;
   },
   shoot: function() {
     this._send({
-      "signal": "SHOOT"
+      signal: "SHOOT"
     });
   },
   _receive: function(msg) {
     var msg_obj = JSON.parse(msg);
-    switch (msg_obj["signal"]) {
+    switch (msg_obj.signal) {
       case "CALLBACK":
-        if (msg_obj["move_completed"] && this._move_completed) {
+        if (msg_obj.moveCompleted && this._onMoveCompleted) {
           var reason = null;
-          if (msg_obj["status"] === "ENEMY_COLLIDE") {
+          if (msg_obj.status === "ENEMY_COLLIDE") {
             reason = "ENEMY_COLLIDE";
           }
-          else if (msg_obj["status"] === "WALL_COLLIDE") {
+          else if (msg_obj.status === "WALL_COLLIDE") {
             reason = "WALL_COLLIDE";
           }
-          this._move_completed(reason);
+          this._onMoveCompleted(reason);
         }
-        if (msg_obj["turn_completed"] && this._turn_completed) {
-          this._turn_completed();
+        if (msg_obj.turnCompleted && this._onTurnCompleted) {
+          this._onTurnCompleted();
         }
-        if (msg_obj["turret_turn_completed"] && this._turret_turn_completed) {
-          this._turret_turn_completed();
+        if (msg_obj.turnGunCompleted && this._onTurnGunCompleted) {
+          this._onTurnGunCompleted();
         }
-        if (msg_obj["radar_turn_completed"] && this._radar_turn_completed) {
-          this._radar_turn_completed();
+        if (msg_obj.turnRadarCompleted && this._onTurnRadarCompleted) {
+          this._onTurnRadarCompleted();
         }
-        break;
-      case "INFO":
-        this.arena_width = msg_obj["arena_width"];
-        this.arena_height = msg_obj["arena_height"];
+        if (msg_obj.enemyScanned && this._onEnemyScanned) {
+          this._onEnemyScanned(msg_obj.enemy);
+        }
         break;
       case "UPDATE":
-        this.x = msg_obj["x"];
-        this.y = msg_obj["y"];
+        for (var key in msg_obj) {
+          if (key !== "signal") {
+            this[key] = msg_obj[key];
+          }
+        }
         break;
       case "RUN":
         this._run();
