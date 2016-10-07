@@ -23,7 +23,6 @@ Properties:
 * `heading`: heading of bot, ranges between 0 and 360.
 * `gunHeading`: heading of gun, ranges between 0 and 360.
 * `radarHeading`: heading of radar, ranges between 0 and 360.
-* `enemyScanned`: true if an enemy is in range of the radar, false otherwise.
 
 Methods:
 * `move(distance)`: move `distance` forward if positive, move backward if negative.
@@ -33,10 +32,12 @@ Methods:
 * `shoot`: fire a bullet.
 * `normalizeHeading(angle)`: normalize `angle` to be between 0 and 360, which is then returned.
 * `normalizeBearing(angle)`: normalize `angle` to be between -180 and 180, which is then returned.
+* `normalizeAngle(oldAngle, newAngle)`: find the shortest way to get from `oldAngle` to `newAngle`, which is then returned.
 
 Callbacks:
-* `onMoveCompleted(cb)`: function `cb` is called when a move has been completed. An `reason` argument is provided indicating why the move was completed: `ENEMY_COLLIDE`, `WALL_COLLIDE`, or `null`.
-* `onTurnCompleted(cb)`: function `cb` is called when a turn has been completed.
-* `onTurnGunCompleted(cb)`: function `cb` is called when a gun turn has been completed.
-* `onTurnRadarCompleted(cb)`: function `cb` is called when a radar turn has been completed.
-* `onEnemyScanned(cb)`: function `cb` is called when an enemy has been scanned. An `enemy` argument is provided with `bearing` of the enemy and `distance` to the enemy as properties.
+* `onMoveEnd(cb)`: function `cb` is called when a move has been completed. An `reason` argument is provided indicating why the move was completed: `ENEMY_COLLIDE`, `WALL_COLLIDE`, or `null`.
+* `onTurnEnd(cb)`: function `cb` is called when a turn has been End.
+* `onTurnGunEnd(cb)`: function `cb` is called when a gun turn has been completed.
+* `onTurnRadarEnd(cb)`: function `cb` is called when a radar turn has been completed.
+* `onEnemyScan(cb)`: function `cb` is called when an enemy has been scanned. An `enemy` argument is provided with `bearing` of the enemy and `distance` to the enemy as properties.
+* `onEnemyScanEnd(cb)`: function `cb` is called when the enemy is not being scanned anymore.

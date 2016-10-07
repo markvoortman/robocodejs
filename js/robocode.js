@@ -73,10 +73,9 @@ $(document).ready(function() {
           radarHeading: 0,
           radarRange: RADAR_RANGE,
           radarWidth: RADAR_WIDTH,
-          enemyScanned: false,
           bullet: null,
           events: [],
-          worker: new Worker(workers[w])
+          worker: new Worker(workers[w]+"?"+Date.now())
         };
         robot.worker.onmessage = (function(id) {
           return function(e) {
@@ -94,6 +93,7 @@ $(document).ready(function() {
       var msg_obj = JSON.parse(msg);
       var battle_manager = this;
       var robot = battle_manager._robots[id];
+      if (!robot) return;
       
       console.log(id, msg);
       
@@ -184,7 +184,6 @@ $(document).ready(function() {
         robot.radar_y1 = ARENA_HEIGHT-robot.y - robot.radarRange*Math.sin(radarHeading1);
         robot.radar_x2 = robot.x + robot.radarRange*Math.cos(radarHeading2);
         robot.radar_y2 = ARENA_HEIGHT-robot.y - robot.radarRange*Math.sin(radarHeading2);
-        robot.enemyScanned = false;
         for (var r2 in battle_manager._robots) {
           var enemy = battle_manager._robots[r2];
           if (robot !== enemy) {
@@ -197,15 +196,15 @@ $(document).ready(function() {
               var tmpy = (ARENA_HEIGHT-enemy.y) - (ARENA_HEIGHT-robot.y);
               var enemyBearing = Math.atan2(tmpy, tmpx) * (180/Math.PI) - (robot.heading-90);
               var enemyDistance = Math.sqrt(tmpx*tmpx + tmpy*tmpy);
-              robot.enemyScanned = true;
               this._send(r, {
                 signal: "CALLBACK",
-                enemyScanned: true,
+                enemyScan: true,
                 enemy: {
                   x: enemy.x,
                   y: enemy.y,
                   bearing: this.normalizeBearing(enemyBearing),
-                  distance: enemyDistance
+                  distance: enemyDistance,
+                  heading: this.normalizeHeading(enemy.heading)
                 }
               });
             }
@@ -248,7 +247,7 @@ $(document).ready(function() {
                 this._send(r, {
                   signal: "CALLBACK",
                   status: "WALL_COLLIDE",
-                  moveCompleted: true
+                  moveEnd: true
                 });
                 break;
               }
@@ -265,7 +264,7 @@ $(document).ready(function() {
                   this._send(r, {
                     signal: "CALLBACK",
                     status: "ENEMY_COLLIDE",
-                    moveCompleted: true
+                    moveEnd: true
                   });
                   break;
                 }
@@ -278,7 +277,7 @@ $(document).ready(function() {
                 this._send(r, {
                   signal: "CALLBACK",
                   status: "DONE",
-                  moveCompleted: true
+                  moveEnd: true
                 });
               }
               else {
@@ -292,7 +291,7 @@ $(document).ready(function() {
                 this._send(r, {
                   signal: "CALLBACK",
                   status: "DONE",
-                  turnCompleted: true
+                  turnEnd: true
                 });
               }
               else {
@@ -306,7 +305,7 @@ $(document).ready(function() {
               if (event.progress === Math.abs(event.angle)) {
                 this._send(r, {
                   signal: "CALLBACK",
-                  turnGunCompleted: true
+                  turnGunEnd: true
                 });
               }
               else {
@@ -320,7 +319,7 @@ $(document).ready(function() {
               if (event.progress === Math.abs(event.angle)) {
                 this._send(r, {
                   signal: "CALLBACK",
-                  turnRadarCompleted: true
+                  turnRadarEnd: true
                 });
               }
               else {
@@ -435,6 +434,11 @@ $(document).ready(function() {
       }
       return angle;
     },
+    normalizeAngle: function(oldAngle, newAngle) {
+      oldAngle = bot.normalizeHeading(oldAngle);
+      newAngle = bot.normalizeHeading(newAngle);
+      return bot.normalizeBearing(oldAngle - newAngle);
+    },
     sendRobotUpdate: function(id) {
       var robot = this._robots[id];
       var state = {
@@ -461,6 +465,6 @@ $(document).ready(function() {
   };
   
   // init and run
-  BattleManager.init(ctx, ["js/enemy-bot.js?"+Date.now(), "js/student-bot.js?"+Date.now()]);
+  BattleManager.init(ctx, ["js/enemy-bot.js", "js/student-bot.js"]);
   BattleManager.run();
 });

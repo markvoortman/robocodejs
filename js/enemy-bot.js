@@ -6,7 +6,7 @@ EnemyBot.run = function() {
   var bot = this;
   
   // callback function for when move completes
-  bot.onMoveCompleted(function(reason) {
+  bot.onMoveEnd(function(reason) {
     if (reason === null) {
       // keep going in same direction
       bot.move(100);
@@ -21,48 +21,62 @@ EnemyBot.run = function() {
   });
   
   // callback function for when turn completes
-  bot.onTurnCompleted(function() {
-    // make only left turns
-    bot.turn(-45);
+  bot.onTurnEnd(function() {
+    // either turn left or right
+    var action = Math.floor(2 * Math.random());
+    switch (action) {
+      case 0:
+        bot.turn(-45);
+        break;
+      case 1:
+        bot.turn(45);
+        break;
+    }
   });
   
   // callback function for when gun turn completes
-  bot.onTurnGunCompleted(function() {
-    // always shoot!
+  bot.onTurnGunEnd(function() {
+    // always shoot when the turn completes
     bot.shoot();
-    var action = Math.floor(2 * Math.random());
-    switch (action) {
-      case 0:
-        bot.turnGun(-45);
-        break;
-      case 1:
-        bot.turnGun(45);
-        break;
-    }
   });
   
   // callback function for when radar turn completes
-  bot.onTurnRadarCompleted(function() {
-    var action = Math.floor(2 * Math.random());
-    switch (action) {
-      case 0:
-        bot.turnRadar(-90);
-        break;
-      case 1:
-        bot.turnRadar(90);
-        break;
+  var enemyScan = false;
+  bot.onTurnRadarEnd(function() {
+    // if not enemy in sight then scan all around
+    if (!enemyScan) {
+      bot.turnRadar(360);
     }
   });
   
-  // start moving
-  bot.onMoveCompleted();
+  // callback function for when a bot is scanned
+  bot.onEnemyScan(function(enemy) {
+    enemyScan = true;
+    // turn the radar toward the bot
+    bot.turnRadar(bot.normalizeBearing(bot.heading - bot.radarHeading + enemy.bearing));
+    // turn the gun toward the bot
+    var gunAngle = bot.normalizeBearing(bot.heading - bot.gunHeading + enemy.bearing);
+    bot.turnGun(gunAngle);
+    // shoot when within five degrees
+    if (Math.abs(gunAngle) <= 1) {
+      bot.shoot()
+    }
+  });
   
-  // start turning
-  bot.onTurnCompleted();
+  bot.onEnemyScanEnd(function() {
+    enemyScan = false;
+    bot.turnRadar();
+  });
   
-  // start turning gun
-  bot.onTurnGunCompleted();
+  // start moving by triggering callback
+  bot.move();
   
-  // start scanning bots
-  bot.onTurnRadarCompleted();
+  // start turning by triggering callback
+  bot.turn();
+  
+  // start turning gun by triggering callback
+  bot.turnGun();
+  
+  // start scanning bots by triggering callback
+  bot.turnRadar();
 }
